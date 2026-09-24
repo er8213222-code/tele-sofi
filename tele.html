@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOFI GAME TV</title>
+
+<style>
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
+
+html,body{
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:#000;
+  font-family:Arial,sans-serif;
+  color:white;
+}
+
+.pantalla{
+  display:none;
+  width:100vw;
+  height:100vh;
+  position:relative;
+}
+
+.pantalla.activa{
+  display:flex;
+}
+
+/* ================= INICIO ================= */
+
+#inicio{
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  background:
+    radial-gradient(circle,#351039,#100010 60%,#000);
+}
+
+.logo{
+  color:#ff25d4;
+  font-size:clamp(55px,10vw,120px);
+  font-weight:900;
+  letter-spacing:5px;
+  text-shadow:
+    5px 5px #85006d,
+    0 0 30px #ff00cc;
+  margin-bottom:60px;
+}
+
+.menu{
+  display:flex;
+  gap:30px;
+}
+
+button{
+  background:#151515;
+  color:white;
+  border:4px solid #ff25d4;
+  border-radius:15px;
+  padding:20px 45px;
+  font-size:28px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+button:focus,
+button.seleccionado{
+  outline:none;
+  background:#ff25d4;
+  box-shadow:0 0 35px #ff00cc;
+  transform:scale(1.08);
+}
+
+/* ================= CASA ================= */
+
+#casa{
+  justify-content:center;
+  align-items:flex-end;
+
+  background-image:
+    url("file_000000002b2881f59c864fd31694d253.jpg");
+
+  background-size:cover;
+  background-position:center;
+}
+
+/* NOCHE */
+
+#casa.noche{
+  background-image:
+    url("file_000000001ad481f59e6804771c97ff90.png");
+}
+
+.botonesCasa{
+  display:flex;
+  gap:30px;
+  margin-bottom:40px;
+}
+
+/* ================= NIVELES ================= */
+
+#niveles{
+  flex-direction:column;
+  padding:30px;
+  background:#050505;
+}
+
+.titulo{
+  text-align:center;
+  color:#ff25d4;
+  font-size:55px;
+  margin-bottom:25px;
+}
+
+.listaNiveles{
+  flex:1;
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:15px;
+}
+
+.nivel{
+  font-size:20px;
+  padding:15px;
+}
+
+.volver{
+  display:block;
+  margin:20px auto 0;
+}
+
+/* ================= ENCUESTA ================= */
+
+#encuesta{
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  text-align:center;
+  background:
+    radial-gradient(circle,#29102d,#000);
+}
+
+#pregunta{
+  font-size:45px;
+  max-width:80%;
+  margin-bottom:40px;
+}
+
+.respuestas{
+  display:flex;
+  gap:25px;
+}
+
+/* ================= MENSAJE ================= */
+
+#mensaje{
+  display:none;
+  position:fixed;
+  z-index:9999;
+  top:25px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#ff00cc;
+  padding:18px 35px;
+  border-radius:15px;
+  font-size:25px;
+  font-weight:bold;
+}
+
+/* ================= TV ================= */
+
+@media(max-width:1000px){
+
+  .listaNiveles{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  button{
+    font-size:22px;
+  }
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="mensaje"></div>
+
+
+<!-- ================= INICIO ================= -->
+
+<section id="inicio" class="pantalla activa">
+
+  <div class="logo">
+    SOFI GAME
+  </div>
+
+  <div class="menu">
+
+    <button onclick="jugar()">
+      JUEGA
+    </button>
+
+    <button onclick="morir()">
+      MUERE
+    </button>
+
+  </div>
+
+</section>
+
+
+<!-- ================= CASA ================= -->
+
+<section id="casa" class="pantalla">
+
+  <div class="botonesCasa">
+
+    <button onclick="abrirNiveles()">
+      ☠️ NIVELES
+    </button>
+
+    <button onclick="abrirEncuesta()">
+      ❓ ENCUESTA
+    </button>
+
+  </div>
+
+</section>
+
+
+<!-- ================= NIVELES ================= -->
+
+<section id="niveles" class="pantalla">
+
+  <h1 class="titulo">
+    ☠️ NIVELES
+  </h1>
+
+  <div class="listaNiveles" id="listaNiveles"></div>
+
+  <button class="volver" onclick="volverCasa()">
+    ← VOLVER
+  </button>
+
+</section>
+
+
+<!-- ================= ENCUESTA ================= -->
+
+<section id="encuesta" class="pantalla">
+
+  <div id="pregunta">
+    ❓ AÚN NO HAY ENCUESTA
+  </div>
+
+  <div class="respuestas">
+
+    <button onclick="respuesta('A')">A</button>
+    <button onclick="respuesta('B')">B</button>
+    <button onclick="respuesta('C')">C</button>
+
+  </div>
+
+  <button class="volver" onclick="volverCasa()">
+    ← VOLVER
+  </button>
+
+</section>
+
+
+<script>
+
+/* =========================================
+   NIVELES
+========================================= */
+
+const niveles = [
+
+  "Tras Tiendas 0",
+  "Caída a Vecindario",
+  "Escaleras Interminables",
+  "Hotel",
+  "Pasillos Susurrantes",
+  "Poolrooms",
+  "Backrooms Espejo",
+  "Paisaje",
+  "Hello Kitty",
+  "Hello Kitty Garden",
+  "Ojos 3.14",
+  "Simulación",
+  "Nivel Fun",
+  "Roba un Brainrot",
+  "Bosque",
+  "Pisos Flotantes"
+
+];
+
+const lista =
+document.getElementById("listaNiveles");
+
+niveles.forEach((nombre,indice)=>{
+
+  const boton =
+  document.createElement("button");
+
+  boton.className="nivel";
+
+  boton.textContent =
+  (indice+1)+". "+nombre;
+
+  boton.onclick=()=>{
+
+    mensaje(
+      "NIVEL "+(indice+1)+": "+nombre
+    );
+
+  };
+
+  lista.appendChild(boton);
+
+});
+
+
+/* =========================================
+   PANTALLAS
+========================================= */
+
+function mostrar(id){
+
+  document
+  .querySelectorAll(".pantalla")
+  .forEach(p=>{
+    p.classList.remove("activa");
+  });
+
+  document
+  .getElementById(id)
+  .classList.add("activa");
+
+  posicion=0;
+
+  setTimeout(enfocar,100);
+}
+
+
+function jugar(){
+
+  actualizarHora();
+
+  mostrar("casa");
+
+}
+
+
+function abrirNiveles(){
+
+  mostrar("niveles");
+
+}
+
+
+function abrirEncuesta(){
+
+  mostrar("encuesta");
+
+}
+
+
+function volverCasa(){
+
+  mostrar("casa");
+
+}
+
+
+/* =========================================
+   MUERE
+========================================= */
+
+function morir(){
+
+  mensaje(
+    "TE VA A VIGILAR EMILIANO DURANTE 2 HORAS"
+  );
+
+}
+
+
+/* =========================================
+   DÍA / NOCHE
+
+   07:00 - 18:59 = DÍA
+   19:00 - 06:59 = NOCHE
+========================================= */
+
+function actualizarHora(){
+
+  const hora =
+  new Date().getHours();
+
+  const casa =
+  document.getElementById("casa");
+
+  if(hora >= 19 || hora < 7){
+
+    casa.classList.add("noche");
+
+  }else{
+
+    casa.classList.remove("noche");
+
+  }
+
+}
+
+
+/* Se revisa cada minuto */
+
+setInterval(
+  actualizarHora,
+  60000
+);
+
+actualizarHora();
+
+
+/* =========================================
+   MENSAJE
+========================================= */
+
+function mensaje(texto){
+
+  const caja =
+  document.getElementById("mensaje");
+
+  caja.textContent=texto;
+
+  caja.style.display="block";
+
+  setTimeout(()=>{
+
+    caja.style.display="none";
+
+  },3000);
+
+}
+
+
+function respuesta(letra){
+
+  mensaje(
+    "RESPUESTA: "+letra
+  );
+
+}
+
+
+/* =========================================
+   🎮 CONTROL SAMSUNG TV
+
+   ↑ ↓ ← →
+   OK = ENTER
+========================================= */
+
+let posicion=0;
+
+
+function botonesDisponibles(){
+
+  return [...document.querySelectorAll("button")]
+  .filter(b=>{
+
+    const estilo =
+    getComputedStyle(b);
+
+    return (
+      estilo.display!=="none" &&
+      estilo.visibility!=="hidden" &&
+      b.offsetParent!==null
+    );
+
+  });
+
+}
+
+
+function enfocar(){
+
+  const botones =
+  botonesDisponibles();
+
+  if(!botones.length)return;
+
+  if(posicion >= botones.length)
+    posicion=0;
+
+  if(posicion < 0)
+    posicion=botones.length-1;
+
+  botones.forEach(b=>{
+    b.classList.remove("seleccionado");
+  });
+
+  botones[posicion]
+  .classList.add("seleccionado");
+
+  botones[posicion].focus();
+
+}
+
+
+document.addEventListener(
+  "keydown",
+  function(e){
+
+    const botones =
+    botonesDisponibles();
+
+    if(!botones.length)return;
+
+
+    /* DERECHA */
+
+    if(e.key==="ArrowRight"){
+
+      e.preventDefault();
+
+      posicion++;
+
+      enfocar();
+
+    }
+
+
+    /* ABAJO */
+
+    else if(e.key==="ArrowDown"){
+
+      e.preventDefault();
+
+      posicion++;
+
+      enfocar();
+
+    }
+
+
+    /* IZQUIERDA */
+
+    else if(e.key==="ArrowLeft"){
+
+      e.preventDefault();
+
+      posicion--;
+
+      enfocar();
+
+    }
+
+
+    /* ARRIBA */
+
+    else if(e.key==="ArrowUp"){
+
+      e.preventDefault();
+
+      posicion--;
+
+      enfocar();
+
+    }
+
+
+    /* OK */
+
+    else if(
+      e.key==="Enter" ||
+      e.key==="Return"
+    ){
+
+      e.preventDefault();
+
+      botones[posicion].click();
+
+    }
+
+  }
+);
+
+
+/* Primera selección */
+
+setTimeout(
+  enfocar,
+  700
+);
+
+</script>
+
+</body>
+    </html>
